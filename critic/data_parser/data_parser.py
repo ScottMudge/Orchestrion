@@ -38,25 +38,38 @@ import mido
 from mido import MidiFile
 
 ###############
-midiPaths = []
-midis = []
 
-# Add test data
-midiPaths.append("../../data/midis/tf_in_d_minor.mid")
 
-for i, midi_fp in enumerate(midiPaths):
-    print("Reading MIDI file [" + str(i) + "]...")
-    midis.append(MidiFile(midi_fp))
-    print("\t--> Loaded!")
-    track_count = len(midis[i].tracks)
-    if track_count < 1:
-        print("No valid tracks found!")
-        break
-    else:
-        print("\t--> " + str(track_count) + " total tracks:")
-        for i, track in enumerate(midis[i].tracks):
-            print('\t\t > Track {}: {}'.format(i, track.name))
+class MidiReader:
+    """This uses mido to read through midis in a list."""
+    midiPaths = []
+    midis = []
 
+    # Add test data
+    def add_midi_to_file_list(self, filename):
+        """Loads a file into the file list."""
+        self.midiPaths.append(filename)
+
+    def read_tracks(self):
+        """ This reads through the tracks in the midiPaths list and loads them into memory. """
+        for i, midi_fp in enumerate(self.midiPaths):
+            print("Reading MIDI file [" + str(i) + "]...")
+            self.midis.append(MidiFile(midi_fp))
+            print("\t--> Loaded!")
+            track_count = len(self.midis[i].tracks)
+            if track_count < 1:
+                print("No valid tracks found!")
+                break
+            else:
+                print("\t--> " + str(track_count) + " total tracks:")
+                for i, track in enumerate(self.midis[i].tracks):
+                   print('\t\t > Track {}: {}'.format(i, track.name))
+
+
+if __name__ == "__main__":
+    reader = MidiReader()
+    reader.add_midi_to_file_list("../../data/midis/tf_in_d_minor.mid")
+    reader.read_tracks()
 
 # out_img = cv.imwrite("out_image.png")
 
