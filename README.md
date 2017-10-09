@@ -18,6 +18,15 @@ In addition to the specific notes, note lengths, velocities, and other standard 
 
 * TensorFlow >= v1.3
    * Compiled w/ GPU for fast training, AVX/AVX2 for even faster training. 
+        * Compiling w/ AVX support on Windows is difficult. To install a prebuilt
+        package of TensorFlow v1.3.1 with AVX/AVX2 and GPU support (CUDA compute capability 5.2 and 6.1), 
+        run the following in your Anaconda (>=v5.0.0 w/ Python 3.6) console:
+            
+            ``` pip install http://scottmudge.com/files/tensorflow_gpu-1.3.1-cp36-cp36m-win_amd64.whl ```
+        
+        * You may also use the standard release (v1.3) from TensorFlow/Google, but it lacks AVX/AVX2 support, and is not compiled with CUDA compute capability 6.1 support.
+        
+            
 * Anaconda >= v5.0
    * w/ Python >= v3.6.2
 * Mido >= v1.2.8
