@@ -1,5 +1,5 @@
-<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?">
-<link rel="shortcut icon" type="image/png" href="/favicon.png">
+<link rel="shortcut icon" type="image/x-icon" href="media/favicon.ico?">
+<link rel="shortcut icon" type="image/png" href="media/favicon.png">
 
 ![Artist-Critic A.I.](https://raw.githubusercontent.com/scottmudge/scottmudge.github.io/master/orchestrion_smallest.png)
 
