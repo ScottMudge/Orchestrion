@@ -108,7 +108,7 @@ class MidiReader:
                # img_min = out_img.min(axis=(0,1), keepdims=True)
                # img_max = out_img.max(axis=(0,1), keepdims=True)
                # out_img = (out_img - img_min)/(img_max-img_min)
-                cv.imwrite("C:/out" + str(i) + ".bmp", out_img)
+                cv.imwrite("C:/out" + str(i) + ".tiff", out_img, [int(cv.IMWRITE_PNG_COMPRESSION), 9])
 
                 valid_midi_count += 1
 
@@ -120,7 +120,7 @@ class MidiReader:
 if __name__ == "__main__":
     reader = MidiReader()
     reader.add_midi_to_file_list("../../data/midis/tf_in_d_minor.mid")
-    reader.add_midi_to_file_list("../../data/midis/bach7.mid")
+     # reader.add_midi_to_file_list("../../data/midis/bach7.mid")
     reader.read_midis()
 
 # out_img = cv.imwrite("out_image.png")
