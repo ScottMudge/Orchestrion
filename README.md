@@ -1,4 +1,7 @@
-# Orchestrion
+<link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?">
+<link rel="shortcut icon" type="image/png" href="/favicon.png">
+
+![Artist-Critic A.I.](https://raw.githubusercontent.com/scottmudge/scottmudge.github.io/master/orchestrion_smallest.png)
 
 Artist-Critic A.I. aimed at autonomous composition of musical pieces, featuring weighted genres and unsupervised learning of stochastic style. 
 
