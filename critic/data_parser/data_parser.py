@@ -44,7 +44,6 @@ class MidiReader:
     """This uses mido to read through midis in a list."""
     midi_paths = []
     midi_data = []
-    midi_parser = mido.Parser()
 
     # Add test data
     def add_midi_to_file_list(self, filename):
@@ -72,13 +71,12 @@ class MidiReader:
                    print('\t\t > Track {}: {}'.format(i, track.name))
 
                 # Read data
-                data = open(midi_fp, "rb").read()
 
                 # Get
-                self.midi_parser.feed(data)
-                total_messages = self.midi_parser.pending()
+                total_messages = midi_file.msg_count();
                 print("\t--> " + str(total_messages) + " total MIDI messages")
                 print("\t--> Reading messages...")
+
 
                 width = int(np.math.sqrt(total_messages))
                 width = width
@@ -92,7 +90,7 @@ class MidiReader:
                 y = 0
                 while msg is not None and x < width and y < height:
                     msg_d = msg.dict()
-                    # print(msg)
+                    print(str(msg_d.get("time",-1)))
                     chan = msg_d.get("channel", 0)
                     note = msg_d.get("note", 0)
                     vel = msg_d.get("velocity", 0)
