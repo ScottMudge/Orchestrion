@@ -1,7 +1,7 @@
 <link rel="shortcut icon" type="image/x-icon" href="media/favicon.ico?">
 <link rel="shortcut icon" type="image/png" href="media/favicon.png">
 
-![Artist-Critic A.I.](media/orchestrion_smallest.png)
+[![Artist-Critic A.I.](media/orchestrion_smallest.png)](http://orchestrion.me/)
 
 Artist-Critic A.I. aimed at autonomous composition of musical pieces, featuring weighted genres and unsupervised learning of stochastic style. 
 

@@ -26,18 +26,34 @@ This package parses midi files of a certain directory, restructures it in a form
 critic model.
 """
 
-###############
+###########################################################
 # Imports
-###############
+###########################################################
 
 # For visualization
 import cv2 as cv
 import numpy as np
+import math
 # For midi operations
-import mido
 from mido import MidiFile
 
-###############
+SF_NOTE = 0.015625
+
+###########################################################
+# Static Methods
+###########################################################
+
+
+def msg_count(midi_file):
+    """Returns the number of messages in the midi file supplied.
+
+    Inclusive of end-track messages."""
+    return sum(len(track) for track in midi_file.tracks)
+
+
+def round_up_to_even(f):
+    """Rounds supplied value to nearest even number."""
+    return math.ceil(f / 2.) * 2
 
 
 class MidiReader:
@@ -73,35 +89,40 @@ class MidiReader:
                 # Read data
 
                 # Get
-                total_messages = midi_file.msg_count();
-                print("\t--> " + str(total_messages) + " total MIDI messages")
-                print("\t--> Reading messages...")
+                total_messages = msg_count(midi_file)
+                total_time = midi_file.length
+                total_px = round_up_to_even(total_time // SF_NOTE)
+                m, s = divmod(total_time, 60)
+                print("\t--> Total MIDI Msgs: \t" + str(total_messages))
+                print("\t--> Total Time: \t\t%02d:%02d" % (m, s))
+                print("\t--> Total Pixels: \t\t" + str(total_px))
 
-
-                width = int(np.math.sqrt(total_messages))
+                width = round_up_to_even(np.math.sqrt(total_px))
                 width = width
                 height = width
+
+                print("\t--> Image Dimensions: \t%d x %d" % (width, height))
 
                 out_img = np.ndarray((width, height, 3), np.int8)
                 out_img.fill(0)
 
-                msg = self.midi_parser.get_message()
+                print("\t--> Reading messages...")
                 x = 0
                 y = 0
-                while msg is not None and x < width and y < height:
-                    msg_d = msg.dict()
-                    print(str(msg_d.get("time",-1)))
-                    chan = msg_d.get("channel", 0)
-                    note = msg_d.get("note", 0)
-                    vel = msg_d.get("velocity", 0)
-                    out_img[x][y][0] = np.int8(chan)
-                    out_img[x][y][1] = np.int8(note)
-                    out_img[x][y][2] = np.int8(vel)
-                    x += 1
-                    if x >= width:
-                        x = 0
-                        y += 1
-                    msg = self.midi_parser.get_message()
+                # while msg is not None and x < width and y < height:
+                #     msg_d = msg.dict()
+                #     print(str(msg_d.get("time",-1)))
+                #     chan = msg_d.get("channel", 0)
+                #     note = msg_d.get("note", 0)
+                #     vel = msg_d.get("velocity", 0)
+                #     out_img[x][y][0] = np.int8(chan)
+                #     out_img[x][y][1] = np.int8(note)
+                #     out_img[x][y][2] = np.int8(vel)
+                #     x += 1
+                #     if x >= width:
+                #         x = 0
+                #         y += 1
+                #     msg = self.midi_parser.get_message()
 
                # img_min = out_img.min(axis=(0,1), keepdims=True)
                # img_max = out_img.max(axis=(0,1), keepdims=True)
