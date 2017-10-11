@@ -36,6 +36,8 @@ import numpy as np
 import math
 # For midi operations
 from mido import MidiFile
+from mido import tick2second
+from mido.midifiles.midifiles import DEFAULT_TEMPO
 
 SF_NOTE = 0.015625
 
@@ -54,7 +56,6 @@ def msg_count(midi_file):
 def round_up_to_even(f):
     """Rounds supplied value to nearest even number."""
     return math.ceil(f / 2.) * 2
-
 
 class MidiReader:
     """This uses mido to read through midis in a list."""
@@ -88,10 +89,11 @@ class MidiReader:
 
                 # Read data
 
-                # Get
                 total_messages = msg_count(midi_file)
                 total_time = midi_file.length
-                total_px = round_up_to_even(total_time // SF_NOTE)
+                total_px = round_up_to_even(total_time / SF_NOTE)
+                px_per_sec = total_px / total_time
+
                 m, s = divmod(total_time, 60)
                 print("\t--> Total MIDI Msgs: \t" + str(total_messages))
                 print("\t--> Total Time: \t\t%02d:%02d" % (m, s))
@@ -103,31 +105,39 @@ class MidiReader:
 
                 print("\t--> Image Dimensions: \t%d x %d" % (width, height))
 
-                out_img = np.ndarray((width, height, 3), np.int8)
-                out_img.fill(0)
+                img_buf = np.ndarray((width * height, 3,), np.uint8)
+                img_buf.fill(0)
+
 
                 print("\t--> Reading messages...")
+
                 x = 0
                 y = 0
-                # while msg is not None and x < width and y < height:
-                #     msg_d = msg.dict()
-                #     print(str(msg_d.get("time",-1)))
-                #     chan = msg_d.get("channel", 0)
-                #     note = msg_d.get("note", 0)
-                #     vel = msg_d.get("velocity", 0)
-                #     out_img[x][y][0] = np.int8(chan)
-                #     out_img[x][y][1] = np.int8(note)
-                #     out_img[x][y][2] = np.int8(vel)
-                #     x += 1
-                #     if x >= width:
-                #         x = 0
-                #         y += 1
-                #     msg = self.midi_parser.get_message()
+                tempo = DEFAULT_TEMPO
+                time = 0
+                for msg in midi_file:
+                    time += msg.time
+
+                    pixel = math.floor(time * px_per_sec)
+
+                    print(str(time))
+
+                    if msg.type == 'set_tempo':
+                        tempo = msg.tempo
+
+                    img_buf[pixel][1] = 255
+                    x += 1
 
                # img_min = out_img.min(axis=(0,1), keepdims=True)
                # img_max = out_img.max(axis=(0,1), keepdims=True)
                # out_img = (out_img - img_min)/(img_max-img_min)
-                cv.imwrite("C:/out" + str(i) + ".tiff", out_img, [int(cv.IMWRITE_PNG_COMPRESSION), 9])
+
+               # out_img = np.ndarray((width, height, 3), np.int8)
+               # for rows in out_img:
+
+                out_img = np.reshape(img_buf, (width, height, 3,), 'C')
+                cv.imshow("Result", out_img)
+                cv.waitKey(0)
 
                 valid_midi_count += 1
 
