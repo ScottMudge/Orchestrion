@@ -20,7 +20,7 @@ In addition to the specific notes, note lengths, velocities, and other standard 
 ## Requirements
 
 * TensorFlow >= v1.3
-   * Compiled w/ GPU for fast training, AVX/AVX2 for even faster training. 
+    * Compiled w/ GPU for fast training, AVX/AVX2 for even faster training. 
         * Compiling w/ AVX support on Windows is difficult. To install a prebuilt
         package of TensorFlow v1.3.1 with AVX/AVX2 and GPU support (CUDA compute capability 5.2 and 6.1), 
         run the following in your Anaconda (>=v5.0.0 w/ Python 3.6) console:
@@ -31,8 +31,11 @@ In addition to the specific notes, note lengths, velocities, and other standard 
         
             
 * Anaconda >= v5.0
-   * w/ Python >= v3.6.2
-* Mido >= v1.2.8
+    * w/ Python >= v3.6.2
+* python-midi >= v0.2.3
+    * To install for Python 3:
+        
+       ``` pip install git+git://github.com/vishnubob/python-midi.git@feature/python3```
 
 
 ## Contributors

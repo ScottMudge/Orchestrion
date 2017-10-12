@@ -35,32 +35,73 @@ import cv2 as cv
 import numpy as np
 import math
 # For midi operations
-from mido import MidiFile
-from mido import tick2second
-from mido.midifiles.midifiles import DEFAULT_TEMPO
+import midi
 
 SF_NOTE = 0.015625
+DEFAULT_TEMPO = 120
 
 ###########################################################
 # Static Methods
 ###########################################################
 
 
-def msg_count(midi_file):
-    """Returns the number of messages in the midi file supplied.
-
-    Inclusive of end-track messages."""
-    return sum(len(track) for track in midi_file.tracks)
-
-
 def round_up_to_even(f):
     """Rounds supplied value to nearest even number."""
     return math.ceil(f / 2.) * 2
+
+
+def tempo_to_ticks(tempo):
+    """Converts tempo to midi ticks."""
+    return math.floor(60 * 1000000 / tempo)
+
+
+def ticks_to_seconds(resolution,tempo,ticks):
+    """Converts ticks to seconds."""
+    return float(((tempo/resolution)/1000000) * ticks)
+
+
+def get_midi_metadata(midi_file):
+    """Returns total number of tracks, events, track names, and total time of midi file"""
+
+    track_cnt = 0
+    msg_cnt = 0
+    track_names = []
+    for Track in midi_file:
+        track_cnt += 1
+        has_track_name = False
+        for AbstractEvent in Track:
+            if AbstractEvent.name != 'End of Track':
+                msg_cnt += 1
+            if AbstractEvent.name == 'Track Name':
+                track_names.append(AbstractEvent.text)
+                has_track_name = True
+        if has_track_name is not True:
+            track_names.append('[No Name]')
+
+    return track_cnt, msg_cnt, track_names
+
+def get_total_midi_time(midi_file):
+    """Returns total midi time of the midi_file."""
+
+    max_time = 0
+    tempo = tempo_to_ticks(DEFAULT_TEMPO)
+
+    for Track in midi_file:
+        time = 0
+        for AbstractEvent in Track:
+            ticks = AbstractEvent.tick
+            if AbstractEvent.name == 'Set Tempo':
+                tempo = tempo_to_ticks(AbstractEvent.bpm)
+            time += ticks_to_seconds(midi_file.resolution, tempo, ticks)
+        if time > max_time:
+            max_time = time
+    return max_time
 
 class MidiReader:
     """This uses mido to read through midis in a list."""
     midi_paths = []
     midi_data = []
+
 
     # Add test data
     def add_midi_to_file_list(self, filename):
@@ -77,25 +118,32 @@ class MidiReader:
         # Enumerate through the midi files
         for i, midi_fp in enumerate(self.midi_paths):
             print("Reading MIDI file [" + str(i) + "] (" + midi_fp + ")...")
-            midi_file = MidiFile(midi_fp)
+
+            #midi_file = MidiFile(midi_fp)
+
+            midi_file = midi.read_midifile(midi_fp)
+            midi_file.make_ticks_rel()
+
             print("\t--> Loaded!")
-            track_count = len(midi_file.tracks)
+            track_count = 0
+            event_count = 0
+            track_names = []
+            track_count, event_count, track_names = get_midi_metadata(midi_file)
             if track_count < 1:
                 print("No valid tracks found!")
             else:
                 print("\t--> " + str(track_count) + " total tracks:")
-                for i, track in enumerate(midi_file.tracks):
-                   print('\t\t > Track {}: {}'.format(i, track.name))
+                for i in range(0,track_count):
+                   print('\t\t > Track {}: {}'.format(i, track_names[i]))
 
                 # Read data
 
-                total_messages = msg_count(midi_file)
-                total_time = midi_file.length
+                total_time = get_total_midi_time(midi_file)
                 total_px = round_up_to_even(total_time / SF_NOTE)
                 px_per_sec = total_px / total_time
 
                 m, s = divmod(total_time, 60)
-                print("\t--> Total MIDI Msgs: \t" + str(total_messages))
+                print("\t--> Total MIDI Events: \t" + str(event_count))
                 print("\t--> Total Time: \t\t%02d:%02d" % (m, s))
                 print("\t--> Total Pixels: \t\t" + str(total_px))
 
@@ -108,40 +156,39 @@ class MidiReader:
                 img_buf = np.ndarray((width * height, 3,), np.uint8)
                 img_buf.fill(0)
 
-
-                print("\t--> Reading messages...")
-
-                x = 0
-                y = 0
-                tempo = DEFAULT_TEMPO
-                time = 0
-                for msg in midi_file:
-                    time += msg.time
-
-                    pixel = math.floor(time * px_per_sec)
-
-                    print(str(time))
-
-                    if msg.type == 'set_tempo':
-                        tempo = msg.tempo
-
-                    img_buf[pixel][1] = 255
-                    x += 1
-
-               # img_min = out_img.min(axis=(0,1), keepdims=True)
-               # img_max = out_img.max(axis=(0,1), keepdims=True)
-               # out_img = (out_img - img_min)/(img_max-img_min)
-
-               # out_img = np.ndarray((width, height, 3), np.int8)
-               # for rows in out_img:
-
-                out_img = np.reshape(img_buf, (width, height, 3,), 'C')
-                cv.imshow("Result", out_img)
-                cv.waitKey(0)
-
-                valid_midi_count += 1
-
-                print("Done reading MIDI file [" + str(i) + "]")
+               #  print("\t--> Reading messages...")
+               #
+               #  x = 0
+               #  y = 0
+               #  tempo = DEFAULT_TEMPO
+               #  time = 0
+               #  for msg in midi_file:
+               #      time += msg.time
+               #
+               #      pixel = math.floor(time * px_per_sec)
+               #
+               #      print(str(time))
+               #
+               #      if msg.type == 'set_tempo':
+               #          tempo = msg.tempo
+               #
+               #      img_buf[pixel][1] = 255
+               #      x += 1
+               #
+               # # img_min = out_img.min(axis=(0,1), keepdims=True)
+               # # img_max = out_img.max(axis=(0,1), keepdims=True)
+               # # out_img = (out_img - img_min)/(img_max-img_min)
+               #
+               # # out_img = np.ndarray((width, height, 3), np.int8)
+               # # for rows in out_img:
+               #
+               #  out_img = np.reshape(img_buf, (width, height, 3,), 'C')
+               #  cv.imshow("Result", out_img)
+               #  cv.waitKey(0)
+               #
+               #  valid_midi_count += 1
+               #
+               #  print("Done reading MIDI file [" + str(i) + "]")
 
         return valid_midi_count
 
@@ -149,7 +196,7 @@ class MidiReader:
 if __name__ == "__main__":
     reader = MidiReader()
     reader.add_midi_to_file_list("../../data/midis/tf_in_d_minor.mid")
-     # reader.add_midi_to_file_list("../../data/midis/bach7.mid")
+    reader.add_midi_to_file_list("../../data/midis/bach7.mid")
     reader.read_midis()
 
 # out_img = cv.imwrite("out_image.png")
