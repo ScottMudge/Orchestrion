@@ -78,7 +78,11 @@ def get_midi_metadata(midi_file):
                 track_names.append(AbstractEvent.text)
                 has_track_name = True
             if AbstractEvent.name == 'Note On':
-                note_ons += 1
+                if AbstractEvent.velocity == 0:
+                    note_offs += 1
+                else:
+                    note_ons += 1
+
             if AbstractEvent.name == 'Note Off':
                 note_offs += 1
         if has_track_name is not True:
@@ -136,8 +140,8 @@ class MidiReader:
         valid_midi_count = 0
 
         # Enumerate through the midi files
-        for i, midi_fp in enumerate(self.midi_paths):
-            print("Reading MIDI file [" + str(i) + "] (" + midi_fp + ")...")
+        for midi_count, midi_fp in enumerate(self.midi_paths):
+            print("Reading MIDI file [" + str(midi_count) + "] (" + midi_fp + ")...")
 
             #midi_file = MidiFile(midi_fp)
 
@@ -205,13 +209,18 @@ class MidiReader:
                         if j not in tracks_with_notes:
                             continue
 
-
                         pixel = math.floor(time * px_per_sec)
 
                         if AbstractEvent.name == 'Note On':
-                            img_buf[pixel][1] = 2**16-1
+                            if AbstractEvent.velocity == 0:
+                                img_buf[pixel][2] = 2 ** 16 - 1
+                            else:
+                                img_buf[pixel][1] = 2**16-1
+
                         elif AbstractEvent.name == 'Note Off':
                             img_buf[pixel][2] = 2**16-1
+
+                        img_buf[pixel][3] = 2**16-1
 
                # img_min = out_img.min(axis=(0,1), keepdims=True)
                # img_max = out_img.max(axis=(0,1), keepdims=True)
@@ -221,12 +230,13 @@ class MidiReader:
                # for rows in out_img:
 
                 out_img = np.reshape(img_buf, (width, height, 4,), 'C')
+                cv.imwrite("C:\\out" + str(midi_count) + ".png", out_img)
                 cv.imshow("Result", out_img)
                 cv.waitKey(0)
 
                 valid_midi_count += 1
 
-                print("Done reading MIDI file [" + str(i) + "]\n\n----------------------------------------\n")
+                print("Done reading MIDI file [" + str(midi_count) + "]\n\n----------------------------------------\n")
 
         return valid_midi_count
 
