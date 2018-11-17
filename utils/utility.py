@@ -101,9 +101,15 @@ def get_cur_directory(file_name: str=__file__) -> str:
     return directory
 
 
-def get_root_directory() -> str:
+_RootDir = ""
+
+
+def get_root_dir() -> str:
     """Returns root directory, useful for storing data."""
-    return "{}/../".format(get_cur_directory(__file__))
+    global _RootDir
+    if len(_RootDir) < 3:
+        _RootDir = "{}/../".format(get_cur_directory(__file__))
+    return _RootDir
 
 
 def file_exists(file_name: str) -> bool:

@@ -1,0 +1,4 @@
+Author: !!python/object:utils.settings.Param {value: Scott Mudge}
+CopyrightYear: !!python/object:utils.settings.Param {value: '2018'}
+LogToDisk: !!python/object:utils.settings.Param {value: true}
+Version: !!python/object:utils.settings.Param {value: 0.1.0}

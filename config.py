@@ -29,7 +29,7 @@ import utils.utility as utility
 class General(settings.Config):
     """General configuration parameters."""
     def __init__(self):
-        super().__init__("general", utility.get_root_directory())
+        super().__init__("general", utility.get_root_dir())
         self.log_to_disk = self.add_param("LogToDisk", True)
         self.version = self.add_param("Version", "0.1.0")
         self.author = self.add_param("Author", "Scott Mudge")

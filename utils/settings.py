@@ -87,12 +87,7 @@ class Config:
             self.params = {}
         else:
             logging("Config").info("Found existing configuration [{}], loading values.".format(name))
-            logging("Test1").warn("Test warning")
-            logging("Test2").error("Test error")
-            logging("Test3").debug("Test debug")
             self.load()
-
-        pass
 
     def add_param(self, param_name: str, value) -> Param:
         """Prototype to add a param by value, returns the parameter itself.

@@ -20,7 +20,7 @@
 
 
 """
-@package data_parser
+@package data_parsing
 
 This package parses midi files of a certain directory, restructures it in a format that is amenable for training the
 critic model.
@@ -34,10 +34,12 @@ critic model.
 import cv2 as cv
 import numpy as np
 import math
+import os
+from utils.logger import get_logger as logging
 # For midi operations
 import midi
 
-SF_NOTE = 0.015625
+TIME_DIVISOR = 0.015625  # 64th note
 DEFAULT_TEMPO = 120
 
 ###########################################################
@@ -90,6 +92,7 @@ def get_midi_metadata(midi_file):
 
     return track_cnt, msg_cnt, track_names, note_ons, note_offs
 
+
 def get_midi_tracks_with_notes(midi_file):
     """This returns the indexes of tracks which contain notes."""
 
@@ -121,34 +124,45 @@ def get_total_midi_time(midi_file):
             max_time = time
     return max_time
 
+
 class MidiReader:
     """This uses mido to read through midis in a list."""
-    midi_paths = []
-    midi_data = []
 
+    def __init__(self, midi_root_dir: str, data_output_dir: str):
+        self.midi_paths = []
+        self.midi_data = []
+        self.log = logging("MidiReader")
+        self.data_out_dir = data_output_dir
+        self.midi_root_dir = midi_root_dir
 
     # Add test data
     def add_midi_to_file_list(self, filename):
         """Loads a file into the file list."""
-        self.midi_paths.append(filename)
+        self.midi_paths.append("{}/{}".format(self.midi_root_dir, filename))
 
-    def read_midis(self):
+    def read_midis(self, show_gui: False):
         """ This reads through the tracks in the midiPaths list and loads them into memory.
 
         @return Number of valid midis"""
         # Local vars
         valid_midi_count = 0
 
+        # Check to make sure output dir is createdd
+        if not os.path.exists(self.data_out_dir):
+            os.mkdir(self.data_out_dir)
+
+        # Start GUI Stuff
+        if show_gui:
+            cv.startWindowThread()
+
         # Enumerate through the midi files
         for midi_count, midi_fp in enumerate(self.midi_paths):
-            print("Reading MIDI file [" + str(midi_count) + "] (" + midi_fp + ")...")
-
-            #midi_file = MidiFile(midi_fp)
+            self.log.info("Reading MIDI file [{}] ({})...".format(midi_count, midi_fp))
 
             midi_file = midi.read_midifile(midi_fp)
             midi_file.make_ticks_rel()
 
-            print("\t--> Loaded!")
+            self.log.info("\t--> Loaded!")
             track_count = 0
             event_count = 0
             note_ons = 0
@@ -156,34 +170,34 @@ class MidiReader:
             track_names = []
             track_count, event_count, track_names, note_ons, note_offs = get_midi_metadata(midi_file)
             if track_count < 1:
-                print("No valid tracks found!")
+                self.log.error("No valid tracks found!")
             else:
-                print("\t--> " + str(track_count) + " total tracks:")
+                self.log.info("\t--> {} total tracks:".format(track_count))
                 for i in range(0,track_count):
-                   print('\t\t > Track {}: {}'.format(i, track_names[i]))
+                    self.log.info('\t\t > Track {}: {}'.format(i, track_names[i]))
 
                 # Read data
 
                 total_time = get_total_midi_time(midi_file)
-                total_px = round_up_to_even(total_time / SF_NOTE)
+                total_px = round_up_to_even(total_time / TIME_DIVISOR)
                 px_per_sec = total_px / total_time
 
                 m, s = divmod(total_time, 60)
-                print("\t--> Total MIDI Events: \t" + str(event_count))
-                print("\t\t > Note Ons: " + str(note_ons) + " | Note Offs: " + str(note_offs))
-                print("\t--> Total Time: \t\t%02d:%02d" % (m, s))
-                print("\t--> Total Pixels: \t\t" + str(total_px))
+                self.log.info("\t--> Total MIDI Events: \t{}".format(event_count))
+                self.log.info("\t\t > Note Ons: {} | Note Offs: {}".format(note_ons, note_offs))
+                self.log.info("\t--> Total Time: \t\t{}:{}".format(m, s))
+                self.log.info("\t--> Total Pixels: \t\t{}".format(total_px))
 
                 width = round_up_to_even(np.math.sqrt(total_px))
                 width = width
                 height = width
 
-                print("\t--> Image Dimensions: \t%d x %d" % (width, height))
+                self.log.info("\t--> Image Dimensions: \t{} x {}".format(width, height))
 
-                img_buf = np.ndarray((width * height, 4,), np.uint16)
+                img_buf = np.ndarray((width * height, 3,), np.uint16)
                 img_buf.fill(0)
 
-                print("\t--> Reading messages...")
+                self.log.info("\t--> Reading messages...")
 
                 x = 0
                 y = 0
@@ -215,12 +229,12 @@ class MidiReader:
                             if AbstractEvent.velocity == 0:
                                 img_buf[pixel][2] = 2 ** 16 - 1
                             else:
-                                img_buf[pixel][1] = 2**16-1
+                                img_buf[pixel][1] = 2 ** 16-1
 
                         elif AbstractEvent.name == 'Note Off':
-                            img_buf[pixel][2] = 2**16-1
+                            img_buf[pixel][2] = 2 ** 16-1
 
-                        img_buf[pixel][3] = 2**16-1
+                     #   img_buf[pixel][3] = 2 ** 16-1
 
                # img_min = out_img.min(axis=(0,1), keepdims=True)
                # img_max = out_img.max(axis=(0,1), keepdims=True)
@@ -229,24 +243,21 @@ class MidiReader:
                # out_img = np.ndarray((width, height, 3), np.int8)
                # for rows in out_img:
 
-                out_img = np.reshape(img_buf, (width, height, 4,), 'C')
-                cv.imwrite("C:\\out" + str(midi_count) + ".png", out_img)
-                cv.imshow("Result", out_img)
-                cv.waitKey(0)
+                out_img = np.reshape(img_buf, (width, height, 3,), 'C')
+
+                cv.imwrite("{}/{}.png".format(self.data_out_dir, midi_count), out_img)
+
+                if show_gui:
+                    cv.imshow("Result", out_img)
+                    cv.waitKey(0)
 
                 valid_midi_count += 1
 
-                print("Done reading MIDI file [" + str(midi_count) + "]\n\n----------------------------------------\n")
+                self.log.info("Done reading MIDI file [{}]\n______________________________________________\n".
+                              format(midi_count))
+
+        if show_gui:
+            cv.destroyAllWindows()
 
         return valid_midi_count
-
-
-if __name__ == "__main__":
-    reader = MidiReader()
-    reader.add_midi_to_file_list("../../data/midis/tf_in_d_minor.mid")
-    reader.add_midi_to_file_list("../../data/midis/dream_sk.mid")
-    reader.add_midi_to_file_list("../../data/midis/bach7.mid")
-    reader.read_midis()
-
-# out_img = cv.imwrite("out_image.png")
 

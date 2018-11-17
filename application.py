@@ -23,12 +23,13 @@
 
 from utils import logger
 from utils.logger import get_logger as logging
-from utils.settings import Config
 from utils import utility
 from config import GeneralCfg
 
+from data_parsing.midi_reader import MidiReader
+
 if __name__ == '__main__':
-    logger.initialize("Orchestrion", GeneralCfg.log_to_disk.value, utility.get_root_directory() + "/logs")
+    logger.initialize("Orchestrion", GeneralCfg.log_to_disk.value, utility.get_root_dir() + "/logs")
     log = logging("App")
     log.info(
         "Starting Orchestrion Application:\n"
@@ -43,6 +44,13 @@ if __name__ == '__main__':
             GeneralCfg.author.value,
             GeneralCfg.copyright_year.value)
     )
+
+    midi_root = utility.get_root_dir() + "/data/midis/"
+    midi_reader = MidiReader(midi_root, "{}/data/generated".format(utility.get_root_dir()))
+    midi_reader.add_midi_to_file_list("bach7.mid")
+    midi_reader.add_midi_to_file_list("dream_sk.mid")
+    midi_reader.add_midi_to_file_list("tf_in_d_minor.mid")
+    midi_reader.read_midis(True)
 
     input("Press any key to quit...")
 
