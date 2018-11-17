@@ -163,12 +163,17 @@ class MidiReader:
             midi_file.make_ticks_rel()
 
             self.log.info("\t--> Loaded!")
+
+            # Setup Local Variables
             track_count = 0
             event_count = 0
             note_ons = 0
             note_offs = 0
             track_names = []
+
+            # Get metadata from midi file
             track_count, event_count, track_names, note_ons, note_offs = get_midi_metadata(midi_file)
+
             if track_count < 1:
                 self.log.error("No valid tracks found!")
             else:
