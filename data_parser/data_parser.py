@@ -1,5 +1,5 @@
 # Orchestrion -- Artist-Critic A.I.
-#    Copyright (C) 2017  Scott Mudge
+#    Copyright (C) 2018  Scott Mudge
 #
 #    mail@scottmudge.com
 #    http://www.scottmudge.com/
