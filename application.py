@@ -29,7 +29,7 @@ from config import GeneralCfg
 from data_parsing.midi_reader import MidiReader
 
 if __name__ == '__main__':
-    logger.initialize("Orchestrion", GeneralCfg.log_to_disk.value, utility.get_root_dir() + "/logs")
+    logger.initialize("Orchestrion", GeneralCfg.log_to_disk.value, utility.get_root_dir())
     log = logging("App")
     log.info(
         "Starting Orchestrion Application:\n"

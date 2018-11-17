@@ -1,0 +1,1 @@
+pyinstaller orchestrion_win.spec

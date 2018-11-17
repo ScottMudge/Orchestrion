@@ -1,0 +1,6 @@
+termcolor
+coloredlogs
+numpy
+git+git://github.com/vishnubob/python-midi.git@feature/python3
+git+git://github.com/scottmudge/pyinstaller.git
+opencv
