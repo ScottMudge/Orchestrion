@@ -1,0 +1,17 @@
+Orchestion
+----------------
+
+Outline:
+
+1. Network Type:
+
+    Abstract:
+        * Input -> Convolutional Layer -> LSTM -> Output
+
+2. Input Type:
+
+    Abstract:
+        * Midi Data:
+            -> Track Number (8 max)
+            -> Velocity (0 - 127)
+            ->
