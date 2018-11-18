@@ -11,7 +11,15 @@ Outline:
 2. Input Type:
 
     Abstract:
+
+        * Input Image (4x4 or 8x8):
+            -> Encapsulates Midi Data
+            -> 1 Channel
+            -> Each px relates to each element of Midi Data
         * Midi Data:
             -> Track Number (8 max)
-            -> Velocity (0 - 127)
-            ->
+            -> Modifiers/Descriptors:
+                - Note On/Off (binary)
+                - Velocity (0 - 127)
+                - Sustain
+                -
